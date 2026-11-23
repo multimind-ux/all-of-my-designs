@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+"""Generate DesktopClock assets for a wallpaper.
+
+Produces:
+  ~/.cache/wallcut/<name>-blur.jpg   blurred wallpaper (frost texture)
+  ~/.cache/wallcut/<name>.png        subject cutout, if rembg is available
+  ~/.cache/wallcut/<name>.json       bbox + 32x18 alpha grid for placement
+
+rembg is optional. If it is missing, the blur still lands and any stale
+cutout/sidecar for this wallpaper is removed so no old subject is drawn.
+"""
+import json
+import os
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+src = sys.argv[1] if len(sys.argv) > 1 else ""
+if not src:
+    sys.exit("usage: wallcut <image-path>")
+
+src = os.path.expanduser(src)
+if os.path.isfile(src) and not src.lower().endswith((".png", ".jpg", ".jpeg", ".webp", ".gif")):
+    first = Path(src).read_text(errors="ignore").strip().splitlines()
+    if first and os.path.isfile(os.path.expanduser(first[0])):
+        src = os.path.expanduser(first[0])
+
+if not os.path.isfile(src):
+    sys.exit("wallcut: no such image: " + src)
+
+name = Path(src).stem
+cache = Path.home() / ".cache" / "wallcut"
+cache.mkdir(parents=True, exist_ok=True)
+
+blur = cache / (name + "-blur.jpg")
+cut = cache / (name + ".png")
+meta = cache / (name + ".json")
+
+magick = shutil.which("magick") or shutil.which("convert")
+if not magick:
+    sys.exit("wallcut: need ImageMagick (magick or convert)")
+
+tmp = str(blur) + ".tmp"
+subprocess.run([magick, src, "-auto-orient", "-resize", "25%", "-blur", "0x16",
+                "-quality", "82", tmp], check=True)
+os.replace(tmp, blur)
+
+rembg = shutil.which("rembg")
+if rembg:
+    tmp_cut = str(cut) + ".tmp"
+    subprocess.run([rembg, "i", src, tmp_cut], check=True)
+    os.replace(tmp_cut, cut)
+
+    try:
+        from PIL import Image
+        im = Image.open(cut).convert("RGBA")
+        alpha = im.getchannel("A")
+        bbox = alpha.getbbox()
+        norm = None
+        if bbox:
+            w, h = im.size
+            norm = [bbox[0] / w, bbox[1] / h, bbox[2] / w, bbox[3] / h]
+        small = alpha.resize((32, 18))
+        grid = [round(v / 255.0, 4) for v in small.getdata()]
+        data = {"bbox": norm, "gw": 32, "gh": 18, "grid": grid}
+    except Exception:
+        data = {"bbox": None, "gw": 0, "gh": 0, "grid": []}
+else:
+    for stale in (cut, meta):
+        if stale.exists():
+            stale.unlink()
+    data = {"bbox": None, "gw": 0, "gh": 0, "grid": []}
+
+tmp_meta = str(meta) + ".tmp"
+Path(tmp_meta).write_text(json.dumps(data, separators=(",", ":")))
+os.replace(tmp_meta, meta)
+
+print(blur)
+print(cut if rembg else "(no rembg: cutout skipped)")
+print(meta)
