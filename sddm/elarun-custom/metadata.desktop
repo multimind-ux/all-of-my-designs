@@ -1,0 +1,10 @@
+[SddmGreeterTheme]
+Name=Prompt
+Description=Terminal-style sign-in. Clock on the wallpaper, login on the right.
+Type=sddm-theme
+Author=Uthman
+MainScript=Main.qml
+ConfigFile=theme.conf
+Screenshot=preview.png
+Theme-Id=prompt
+Theme-API=2.0

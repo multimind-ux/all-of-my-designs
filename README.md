@@ -61,3 +61,21 @@ qs -c lockscreen ipc call lockscreen lockTimed 3
 ## Attribution
 
 Adapted from [codetesla51/uthman_dotfiles](https://github.com/codetesla51/uthman_dotfiles). Caelestia is used for the base desktop shell, wallpaper, and dynamic color scheme.
+
+## SDDM login theme (Prompt)
+
+The `sddm/elarun-custom/` directory is the terminal-style login screen ported
+from `codetesla51/uthman_dotfiles`. It uses a fixed cool-dark palette (matching
+the notification island) and a copy of the current Caelestia wallpaper, so it
+does not depend on matugen.
+
+Install it with root privileges:
+
+```bash
+sudo ./install-sddm-theme.sh
+```
+
+It copies the theme to `/usr/share/sddm/themes/elarun-custom` and writes
+`/etc/sddm.conf.d/50-prompt-theme.conf`. The theme is used on the next login or
+reboot; SDDM is not restarted by the script so your current session is not
+interrupted.

@@ -1,0 +1,606 @@
+import QtQuick 2.15
+
+// Prompt — terminal-style SDDM theme.
+// Left: wallpaper and clock. Right: a quiet login panel.
+// Palette is a fixed cool-dark set in Palette.qml (no matugen dependency).
+
+Rectangle {
+    id: root
+    anchors.fill: parent
+    color: pal.background
+
+    Palette { id: pal }
+
+    readonly property real u: height > 0 ? height / 1080.0 : 1.0
+    function px(n) { return n * root.u }
+    function alpha(c, a) { return Qt.rgba(c.r, c.g, c.b, a) }
+
+    readonly property real padH: root.px(40)
+    readonly property real padTop: root.px(38)
+    readonly property real padBottom: root.px(28)
+    readonly property real panelWidth: Math.round(root.px(500))
+
+    property string loginUser: userModel.lastUser !== "" ? userModel.lastUser : "abdulbasit"
+    property int sessionIndex: sessionModel.count > 0 ? Math.max(0, sessionModel.lastIndex) : 0
+    property string failMsg: ""
+    property bool loggingIn: false
+    property bool caretOn: true
+    property var now: new Date()
+    property string hours: Qt.formatDateTime(now, "HH")
+    property string minutes: Qt.formatDateTime(now, "mm")
+
+    function powerEnabled(i) {
+        if (i === 0) return sddm.canSuspend
+        if (i === 1) return sddm.canReboot
+        return sddm.canPowerOff
+    }
+
+    function doLogin() {
+        if (loggingIn)
+            return
+        if (pwField.text === "") {
+            failMsg = "Enter your password"
+            pwField.forceActiveFocus()
+            return
+        }
+        if (sessionIndex < 0 || sessionIndex >= sessionModel.count)
+            sessionIndex = sessionModel.count > 0 ? sessionModel.lastIndex : 0
+        failMsg = ""
+        loggingIn = true
+        sddm.login(loginUser, pwField.text, sessionIndex)
+    }
+
+    Timer {
+        interval: 1000
+        running: true
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: root.now = new Date()
+    }
+
+    Timer {
+        interval: 530
+        running: pwField.activeFocus && !root.loggingIn
+        repeat: true
+        onTriggered: root.caretOn = !root.caretOn
+        onRunningChanged: if (running) root.caretOn = true
+    }
+
+    Connections {
+        target: sddm
+        function onLoginFailed() {
+            root.loggingIn = false
+            root.failMsg = "Wrong password. Try again."
+            pwField.text = ""
+            pwField.forceActiveFocus()
+        }
+        function onLoginSucceeded() {
+            root.loggingIn = true
+        }
+    }
+
+    Image {
+        id: wallpaper
+        anchors.fill: parent
+        source: "wallpaper.png"
+        fillMode: Image.PreserveAspectCrop
+        property real zoom: 1.07
+        scale: zoom
+        transformOrigin: Item.Center
+        opacity: 0
+
+        NumberAnimation on zoom {
+            from: 1.07
+            to: 1.02
+            duration: 1500
+            easing.type: Easing.OutCubic
+        }
+        NumberAnimation on opacity {
+            from: 0
+            to: 1
+            duration: 1200
+            easing.type: Easing.OutCubic
+        }
+    }
+
+    // Soft veil on the left so the clock stays readable without hiding the art.
+    Rectangle {
+        anchors {
+            left: parent.left
+            top: parent.top
+            bottom: parent.bottom
+            right: panel.left
+        }
+        gradient: Gradient {
+            orientation: Gradient.Horizontal
+            GradientStop { position: 0.0; color: root.alpha(pal.background, 0.74) }
+            GradientStop { position: 0.58; color: root.alpha(pal.background, 0.42) }
+            GradientStop { position: 1.0; color: root.alpha(pal.background, 0.58) }
+        }
+    }
+    Rectangle {
+        anchors {
+            left: parent.left
+            top: parent.top
+            bottom: parent.bottom
+            right: panel.left
+        }
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "transparent" }
+            GradientStop { position: 0.38; color: "transparent" }
+            GradientStop { position: 1.0; color: root.alpha(pal.background, 0.70) }
+        }
+    }
+
+    Item {
+        id: leftLayer
+        anchors.fill: parent
+        opacity: 0
+        transform: Translate { id: leftShift; y: root.px(10) }
+
+        Row {
+            anchors {
+                left: parent.left
+                leftMargin: root.px(46)
+                top: parent.top
+                topMargin: root.px(42)
+            }
+            spacing: 0
+
+            Text {
+                text: "ARCH LINUX"
+                color: pal.tertiary
+                font.family: "monospace"
+                font.pixelSize: root.px(9)
+                font.letterSpacing: root.px(1.6)
+            }
+            Text {
+                text: " / "
+                color: root.alpha(pal.outline, 0.5)
+                font.family: "monospace"
+                font.pixelSize: root.px(9)
+                font.letterSpacing: root.px(1.6)
+            }
+            Text {
+                text: "HYPRLAND"
+                color: root.alpha(pal.text, 0.48)
+                font.family: "monospace"
+                font.pixelSize: root.px(9)
+                font.letterSpacing: root.px(1.6)
+            }
+        }
+
+        Column {
+            anchors {
+                left: parent.left
+                leftMargin: root.px(46)
+                bottom: parent.bottom
+                bottomMargin: root.px(42)
+            }
+            spacing: root.px(12)
+
+            Text {
+                text: Qt.formatDateTime(root.now, "dddd d MMMM")
+                color: root.alpha(pal.text, 0.62)
+                font.family: "monospace"
+                font.pixelSize: root.px(14)
+                font.letterSpacing: root.px(0.4)
+            }
+
+            Text {
+                text: root.hours + "\n" + root.minutes
+                color: pal.text
+                font.family: displayFont.name !== "" ? displayFont.name : "Iceland"
+                font.pixelSize: root.px(198)
+                font.letterSpacing: -root.px(7)
+                lineHeight: 0.74
+                lineHeightMode: Text.ProportionalHeight
+            }
+        }
+    }
+
+    Rectangle {
+        id: panel
+        width: root.panelWidth
+        anchors {
+            top: parent.top
+            bottom: parent.bottom
+            right: parent.right
+        }
+        color: root.alpha(pal.surfaceContainerLow, 0.95)
+        opacity: 0
+        transform: Translate { id: panelShift; x: root.px(28) }
+
+        Rectangle {
+            anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
+            width: 1
+            color: root.alpha(pal.outline, 0.22)
+        }
+
+        // Small mark from the previous theme, now used as a logo.
+        Item {
+            id: panelTop
+            anchors {
+                left: parent.left
+                right: parent.right
+                top: parent.top
+                leftMargin: root.padH
+                rightMargin: root.padH
+                topMargin: root.padTop
+            }
+            height: root.px(200)
+
+            Row {
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                height: root.px(200)
+                spacing: root.px(12)
+
+                Image {
+                    source: "images/logo-white.png"
+                    width: root.px(200)
+                    height: root.px(200)
+                    fillMode: Image.PreserveAspectFit
+                    opacity: 1.0
+                }
+
+                Text {
+                    text: "TTY 01"
+                    color: pal.tertiary
+                    height: parent.height
+                    verticalAlignment: Text.AlignVCenter
+                    font.family: "monospace"
+                    font.pixelSize: root.px(9)
+                    font.letterSpacing: root.px(1.6)
+                }
+            }
+
+            Text {
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                text: root.loginUser.toUpperCase()
+                color: root.alpha(pal.text, 0.74)
+                font.family: "monospace"
+                font.pixelSize: root.px(9)
+                font.letterSpacing: root.px(1.6)
+            }
+        }
+
+        Column {
+            id: promptBlock
+            anchors {
+                left: parent.left
+                right: parent.right
+                leftMargin: root.padH
+                rightMargin: root.padH
+                verticalCenter: parent.verticalCenter
+                verticalCenterOffset: -root.px(60)
+            }
+            opacity: 0
+            transform: Translate { id: promptShift; y: root.px(16) }
+
+            Row {
+                width: parent.width
+                spacing: root.px(9)
+
+                Text {
+                    text: root.loginUser
+                    color: pal.primary
+                    font.family: "monospace"
+                    font.pixelSize: root.px(13)
+                }
+                Text {
+                    text: "@"
+                    color: root.alpha(pal.text, 0.42)
+                    font.family: "monospace"
+                    font.pixelSize: root.px(13)
+                }
+                Text {
+                    text: "arch"
+                    color: pal.text
+                    font.family: "monospace"
+                    font.pixelSize: root.px(13)
+                }
+                Text {
+                    text: "~"
+                    color: pal.tertiary
+                    font.family: "monospace"
+                    font.pixelSize: root.px(13)
+                }
+                Text {
+                    text: "login"
+                    color: root.alpha(pal.text, 0.58)
+                    font.family: "monospace"
+                    font.pixelSize: root.px(13)
+                }
+            }
+
+            Item { width: 1; height: root.px(16) }
+
+            Item {
+                width: parent.width
+                height: root.px(44)
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: pwField.forceActiveFocus()
+                }
+
+                Row {
+                    anchors.fill: parent
+                    spacing: root.px(11)
+
+                    Text {
+                        text: ">"
+                        color: root.alpha(pal.primary, 0.9)
+                        height: parent.height
+                        verticalAlignment: Text.AlignVCenter
+                        font.family: "monospace"
+                        font.pixelSize: root.px(18)
+                    }
+
+                    TextInput {
+                        id: pwField
+                        width: Math.min(parent.width - root.px(44), Math.max(root.px(2), implicitWidth))
+                        height: parent.height
+                        verticalAlignment: TextInput.AlignVCenter
+                        color: pal.text
+                        selectionColor: pal.primary
+                        selectedTextColor: pal.background
+                        font.family: "monospace"
+                        font.pixelSize: root.px(18)
+                        font.letterSpacing: root.px(0.7)
+                        echoMode: TextInput.Password
+                        passwordCharacter: "•"
+                        selectByMouse: true
+                        readOnly: root.loggingIn
+                        focus: true
+
+                        onActiveFocusChanged: root.caretOn = true
+                        onTextChanged: {
+                            if (root.failMsg !== "" && text !== "")
+                                root.failMsg = ""
+                        }
+                        Keys.onPressed: {
+                            if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                                root.doLogin()
+                                event.accepted = true
+                            }
+                        }
+                    }
+
+                    Rectangle {
+                        width: root.px(9)
+                        height: root.px(20)
+                        anchors.verticalCenter: parent.verticalCenter
+                        color: pal.primary
+                        opacity: root.loggingIn ? 0.35 : (root.caretOn ? 1 : 0)
+                    }
+                }
+            }
+
+            Rectangle {
+                width: parent.width
+                height: 1
+                color: root.failMsg !== ""
+                       ? pal.error
+                       : (pwField.activeFocus ? root.alpha(pal.primary, 0.62)
+                                              : root.alpha(pal.text, 0.24))
+            }
+
+            Item { width: 1; height: root.px(12) }
+
+            Text {
+                width: parent.width
+                height: root.px(22)
+                text: root.failMsg
+                color: pal.error
+                visible: root.failMsg !== ""
+                font.family: "monospace"
+                font.pixelSize: root.px(12)
+            }
+
+            Text {
+                width: parent.width
+                text: root.loggingIn ? "Signing in…" : "Enter to sign in"
+                color: root.loggingIn ? pal.primary : root.alpha(pal.outline, 0.6)
+                font.family: "monospace"
+                font.pixelSize: root.px(9)
+                font.letterSpacing: root.px(1.3)
+            }
+        }
+
+        Column {
+            id: sessionBlock
+            anchors {
+                left: parent.left
+                right: parent.right
+                leftMargin: root.padH
+                rightMargin: root.padH
+                bottom: parent.bottom
+                bottomMargin: root.px(98)
+            }
+
+            Text {
+                text: "SESSION"
+                color: root.alpha(pal.outline, 0.62)
+                font.family: "monospace"
+                font.pixelSize: root.px(9)
+                font.letterSpacing: root.px(1.3)
+            }
+
+            Item { width: 1; height: root.px(8) }
+
+            Repeater {
+                model: sessionModel
+
+                delegate: Rectangle {
+                    width: sessionBlock.width
+                    height: root.px(40)
+                    color: index === root.sessionIndex
+                           ? root.alpha(pal.primary, 0.07)
+                           : (sessionMouse.containsMouse ? root.alpha(pal.primary, 0.04) : "transparent")
+                    Behavior on color { ColorAnimation { duration: 140 } }
+
+                    Rectangle {
+                        anchors { left: parent.left; top: parent.top; bottom: parent.bottom }
+                        width: root.px(2)
+                        color: index === root.sessionIndex ? pal.primary : "transparent"
+                    }
+
+                    Text {
+                        anchors.left: parent.left
+                        anchors.leftMargin: root.px(12)
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: model.name
+                        color: index === root.sessionIndex ? pal.primary : root.alpha(pal.text, 0.6)
+                        font.family: "monospace"
+                        font.pixelSize: root.px(12)
+                    }
+
+                    MouseArea {
+                        id: sessionMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        enabled: !root.loggingIn
+                        onClicked: {
+                            root.sessionIndex = index
+                            pwField.forceActiveFocus()
+                        }
+                    }
+                }
+            }
+        }
+
+        Row {
+            id: powerRow
+            anchors {
+                left: parent.left
+                right: parent.right
+                leftMargin: root.padH
+                rightMargin: root.padH
+                bottom: parent.bottom
+                bottomMargin: root.padBottom
+            }
+            height: root.px(42)
+            spacing: root.px(8)
+
+            Repeater {
+                model: ["SLEEP", "RESTART", "SHUT DOWN"]
+
+                delegate: Rectangle {
+                    width: (powerRow.width - 2 * powerRow.spacing) / 3
+                    height: powerRow.height
+                    radius: root.px(8)
+                    color: powerMouse.containsMouse && root.powerEnabled(index) && !root.loggingIn
+                           ? root.alpha(pal.primary, 0.06)
+                           : "transparent"
+                    border.width: 1
+                    border.color: powerMouse.containsMouse && root.powerEnabled(index) && !root.loggingIn
+                                  ? root.alpha(pal.primary, 0.52)
+                                  : root.alpha(pal.outline, 0.18)
+                    opacity: root.powerEnabled(index) ? 1 : 0.5
+                    Behavior on color { ColorAnimation { duration: 140 } }
+                    transform: Translate {
+                        y: powerMouse.containsMouse && root.powerEnabled(index) && !root.loggingIn ? -root.px(2) : 0
+                        Behavior on y { NumberAnimation { duration: 140 } }
+                    }
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: modelData
+                        color: powerMouse.containsMouse && root.powerEnabled(index) && !root.loggingIn
+                               ? pal.primary
+                               : root.alpha(pal.text, 0.52)
+                        font.family: "monospace"
+                        font.pixelSize: root.px(9)
+                        font.letterSpacing: root.px(1.3)
+                    }
+
+                    MouseArea {
+                        id: powerMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        enabled: root.powerEnabled(index) && !root.loggingIn
+                        onClicked: {
+                            if (index === 0)
+                                sddm.suspend()
+                            else if (index === 1)
+                                sddm.reboot()
+                            else
+                                sddm.powerOff()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    FontLoader {
+        id: displayFont
+        source: "fonts/Iceberg-Regular.ttf"
+    }
+
+    NumberAnimation {
+        target: panel
+        property: "opacity"
+        from: 0
+        to: 1
+        duration: 700
+        easing.type: Easing.OutCubic
+        running: true
+    }
+    NumberAnimation {
+        target: panelShift
+        property: "x"
+        from: root.px(28)
+        to: 0
+        duration: 700
+        easing.type: Easing.OutCubic
+        running: true
+    }
+    SequentialAnimation {
+        running: true
+        PauseAnimation { duration: 80 }
+        ParallelAnimation {
+            NumberAnimation {
+                target: leftLayer
+                property: "opacity"
+                to: 1
+                duration: 700
+                easing.type: Easing.OutCubic
+            }
+            NumberAnimation {
+                target: leftShift
+                property: "y"
+                to: 0
+                duration: 700
+                easing.type: Easing.OutCubic
+            }
+        }
+    }
+    SequentialAnimation {
+        running: true
+        PauseAnimation { duration: 140 }
+        ParallelAnimation {
+            NumberAnimation {
+                target: promptBlock
+                property: "opacity"
+                to: 1
+                duration: 700
+                easing.type: Easing.OutCubic
+            }
+            NumberAnimation {
+                target: promptShift
+                property: "y"
+                to: 0
+                duration: 700
+                easing.type: Easing.OutCubic
+            }
+        }
+    }
+
+    Component.onCompleted: pwField.forceActiveFocus()
+}
