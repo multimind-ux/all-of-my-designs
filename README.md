@@ -2,7 +2,7 @@
 
 Quickshell desktop designs adapted for a **Caelestia + Hyprland** setup.
 
-The layouts originate from [codetesla51/uthman_dotfiles](https://github.com/codetesla51/uthman_dotfiles) and were repackaged here as standalone Quickshell configs that run alongside Caelestia instead of replacing its shell.
+These are my own desktop designs, built and maintained by multimind-ux (Abdulbasit) for a Caelestia + Hyprland setup. They run as standalone Quickshell configs alongside Caelestia instead of replacing its shell.
 
 ## What's inside
 
@@ -13,6 +13,8 @@ The layouts originate from [codetesla51/uthman_dotfiles](https://github.com/code
 | `quickshell/wall-clock` | Frosted time/date drawn on the background layer above the wallpaper. Tall condensed digits with a cutout look. |
 | `quickshell/lockscreen` | Full lockscreen stack: clock, quote, music, weather, stats, uptime, recent notifications, and PAM password field. `SUPER+L`. |
 | `assets/pixelbot` | PixelBot mood sounds. |
+| `scripts/cava-*.conf` | Lightweight cava configs used by the lockscreen visualizer and available for the island. |
+| `sddm/elarun-custom` | Terminal-style SDDM login screen (Prompt) with a fixed cool-dark palette. |
 | `scripts/sync-caelestia-colors` | Exports Caelestia's wallpaper-derived scheme to `~/.config/quickshell/colors.css`. |
 
 ## Install
@@ -60,12 +62,12 @@ qs -c lockscreen ipc call lockscreen lockTimed 3
 
 ## Attribution
 
-Adapted from [codetesla51/uthman_dotfiles](https://github.com/codetesla51/uthman_dotfiles). Caelestia is used for the base desktop shell, wallpaper, and dynamic color scheme.
+Upstream inspiration: [codetesla51/uthman_dotfiles](https://github.com/codetesla51/uthman_dotfiles). Everything in this repository is maintained as multimind-ux's own designs. Caelestia is used for the base desktop shell, wallpaper, and dynamic color scheme.
 
 ## SDDM login theme (Prompt)
 
 The `sddm/elarun-custom/` directory is the terminal-style login screen ported
-from `codetesla51/uthman_dotfiles`. It uses a fixed cool-dark palette (matching
+adapted by multimind-ux. It uses a fixed cool-dark palette (matching
 the notification island) and a copy of the current Caelestia wallpaper, so it
 does not depend on matugen.
 

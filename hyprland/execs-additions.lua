@@ -9,5 +9,5 @@ hl.exec_cmd("qs -c notif-island -n -d")
 -- Wallpaper clock (frosted time on the background)
 hl.exec_cmd("qs -c wall-clock -n -d")
 
--- uthman_dotfiles lockscreen stack
+-- multimind-ux lockscreen design
 hl.exec_cmd("qs -c lockscreen -n -d")

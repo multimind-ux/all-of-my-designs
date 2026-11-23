@@ -7,7 +7,7 @@ create_bind(vars.kbRestoreLock, function()
     hl.dispatch(hl.dsp.exec_cmd("qs -c lockscreen ipc call lockscreen lock"))
 end)
 
--- Wi-Fi panel (uthman_dotfiles Quickshell module)
+-- Wi-Fi panel (multimind-ux Quickshell design)
 create_bind("SUPER + H", hl.dsp.exec_cmd("qs -c wifi-panel ipc call wifi toggle"))
 
 -- Notification island

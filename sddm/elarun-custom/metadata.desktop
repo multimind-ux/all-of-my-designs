@@ -2,7 +2,7 @@
 Name=Prompt
 Description=Terminal-style sign-in. Clock on the wallpaper, login on the right.
 Type=sddm-theme
-Author=Uthman
+Author=multimind-ux (Abdulbasit)
 MainScript=Main.qml
 ConfigFile=theme.conf
 Screenshot=preview.png

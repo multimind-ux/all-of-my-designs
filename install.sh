@@ -4,7 +4,7 @@ set -euo pipefail
 src="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 qs_dir="$HOME/.config/quickshell"
 
-mkdir -p "$qs_dir" "$qs_dir/assets/pixelbot" "$HOME/.local/bin"
+mkdir -p "$qs_dir" "$qs_dir/assets/pixelbot" "$qs_dir/scripts" "$HOME/.local/bin"
 
 for config in wifi-panel notif-island wall-clock lockscreen; do
     rm -rf "$qs_dir/$config"
@@ -12,6 +12,7 @@ for config in wifi-panel notif-island wall-clock lockscreen; do
 done
 
 cp "$src/assets/pixelbot/"*.wav "$qs_dir/assets/pixelbot/"
+cp "$src/scripts/cava-"*.conf "$qs_dir/scripts/"
 install -m 755 "$src/scripts/sync-caelestia-colors" "$HOME/.local/bin/sync-caelestia-colors"
 
 echo "Installed Quickshell configs into $qs_dir"

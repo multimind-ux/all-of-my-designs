@@ -3,7 +3,7 @@ import Quickshell.Io
 import QtQuick
 import "." as LockUi
 
-// Standalone wrapper for the uthman_dotfiles lockscreen stack. It runs beside
+// Standalone wrapper for the multimind-ux lockscreen design. It runs beside
 // Caelestia; `ipc call lockscreen lock` engages the session lock.
 ShellRoot {
     id: root
