@@ -138,7 +138,7 @@ ShellRoot {
         implicitHeight: 72
         // Reserve a top strip so windows (browser, terminal, etc.) start
         // below the island instead of underneath it.
-        exclusiveZone: 64
+        exclusiveZone: 48
         color: "transparent"
         WlrLayershell.namespace: "qs-notif-island"
         WlrLayershell.layer: WlrLayer.Overlay
