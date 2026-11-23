@@ -6,8 +6,8 @@ import QtQuick.Effects
 import "desktopclock"
 import "components/Bloom.js" as Bloom
 
-// DesktopClock — replaces the wallpaper daemon: one full-screen surface on the
-// background layer that draws the wallpaper, the clock, and the subject cutout
+// DesktopClock — full-surface clock. In this Caelestia setup it lives on the bottom
+// layer so it sits above Caelestia's background wallpaper but below windows.
 // stacked on top of the digits.
 //
 // Layer order: wallpaper -> clock -> cutout -> date.
@@ -19,7 +19,7 @@ PanelWindow {
 
     anchors { top: true; bottom: true; left: true; right: true }
     exclusionMode: ExclusionMode.Ignore
-    WlrLayershell.layer: WlrLayer.Background
+    WlrLayershell.layer: WlrLayer.Bottom
     WlrLayershell.namespace: "qs-desktopclock"
     color: "transparent"
 
