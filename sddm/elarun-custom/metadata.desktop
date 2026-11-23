@@ -8,3 +8,4 @@ ConfigFile=theme.conf
 Screenshot=preview.png
 Theme-Id=prompt
 Theme-API=2.0
+QtVersion=6
