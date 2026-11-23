@@ -134,9 +134,11 @@ ShellRoot {
     // ---------- window ----------
     PanelWindow {
         anchors { top: true; left: true; right: true }
-        margins { top: 0 }
-        implicitHeight: 120
-        exclusionMode: ExclusionMode.Ignore
+        margins { top: -10; left: -60; right: -10 }
+        implicitHeight: 72
+        // Reserve a top strip so windows (browser, terminal, etc.) start
+        // below the island instead of underneath it.
+        exclusiveZone: 64
         color: "transparent"
         WlrLayershell.namespace: "qs-notif-island"
         WlrLayershell.layer: WlrLayer.Overlay
@@ -152,8 +154,8 @@ ShellRoot {
                 topMargin: -root.topClip
                 horizontalCenter: parent.horizontalCenter
             }
-            width: Math.min(820, Math.max(640, topRow.implicitWidth + 48))
-            height: root.open ? 114 : 72
+            width: root.open ? 880 : Math.min(680, Math.max(520, topRow.implicitWidth + 36))
+            height: 72
             radius: 26
             color: "#101014"
             border.width: 1
@@ -171,168 +173,176 @@ ShellRoot {
                 onClicked: root.open = false
             }
 
-            ColumnLayout {
+            RowLayout {
+                id: topRow
                 z: 1
                 anchors {
                     left: parent.left
                     right: parent.right
                     top: parent.top
                     bottom: parent.bottom
+                    leftMargin: 12
+                    rightMargin: 12
+                    topMargin: 8
+                    bottomMargin: 8
                 }
-                anchors.leftMargin: 12
-                anchors.rightMargin: 12
-                anchors.topMargin: 8
-                anchors.bottomMargin: 8
-                spacing: 4
+                spacing: 10
 
-                RowLayout {
-                    id: topRow
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 38
-                    spacing: 10
+                Rectangle {
+                    width: 44
+                    height: 44
+                    radius: 22
+                    color: palette.alpha(palette.primary, 0.12)
+                    Layout.alignment: Qt.AlignVCenter
 
-                    Rectangle {
-                        width: 44
-                        height: 44
-                        radius: 22
-                        color: palette.alpha(palette.primary, 0.12)
-                        Layout.alignment: Qt.AlignVCenter
-
-                        PixelBot {
-                            id: bot
-                            anchors.centerIn: parent
-                            colors: palette
-                            pixelScale: 2
-                            roamWidth: 16
-                            registerIpc: true
-                            moodSounds: true
-                        }
-                    }
-
-                    Rectangle {
-                        width: 1
-                        height: 26
-                        color: palette.alpha(palette.outline, 0.25)
-                        Layout.alignment: Qt.AlignVCenter
-                    }
-
-                    NowPlayingMini {
+                    PixelBot {
+                        id: bot
+                        anchors.centerIn: parent
                         colors: palette
-                        Layout.alignment: Qt.AlignVCenter
-                        Layout.maximumWidth: 210
-                    }
-
-                    Rectangle {
-                        width: 1
-                        height: 26
-                        color: palette.alpha(palette.outline, 0.25)
-                        Layout.alignment: Qt.AlignVCenter
-                    }
-
-                    RowLayout {
-                        spacing: 10
-                        Layout.alignment: Qt.AlignVCenter
-
-                        Text {
-                            text: "CPU " + Math.round(bot.cpu) + "%"
-                            color: palette.alpha(palette.foreground, 0.78)
-                            font.family: palette.fontSans
-                            font.pixelSize: 9
-                        }
-                        Text {
-                            text: "NET " + net.fmt(net.rxKbs + net.txKbs)
-                            color: palette.alpha(palette.foreground, 0.78)
-                            font.family: palette.fontSans
-                            font.pixelSize: 9
-                        }
-                        Text {
-                            text: "BAT " + Math.round(bot.battery) + "%"
-                            color: palette.alpha(palette.foreground, 0.78)
-                            font.family: palette.fontSans
-                            font.pixelSize: 9
-                        }
-                    }
-
-                    Rectangle {
-                        width: 1
-                        height: 26
-                        color: palette.alpha(palette.outline, 0.25)
-                        Layout.alignment: Qt.AlignVCenter
-                    }
-
-                    ColumnLayout {
-                        spacing: 0
-                        Layout.alignment: Qt.AlignVCenter
-                        Text {
-                            text: root.clockTime
-                            color: palette.foreground
-                            font.family: palette.fontSans
-                            font.pixelSize: 13
-                            font.weight: Font.DemiBold
-                        }
-                        Text {
-                            text: root.clockDate
-                            color: palette.alpha(palette.foreground, 0.55)
-                            font.family: palette.fontSans
-                            font.pixelSize: 8
-                        }
+                        pixelScale: 2
+                        roamWidth: 16
+                        registerIpc: true
+                        moodSounds: true
                     }
                 }
 
                 Rectangle {
-                    visible: root.open
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 36
-                    Layout.topMargin: 2
-                    color: "transparent"
+                    width: 1
+                    height: 26
+                    color: palette.alpha(palette.outline, 0.25)
+                    Layout.alignment: Qt.AlignVCenter
+                }
 
-                    RowLayout {
-                        anchors.fill: parent
-                        spacing: 10
+                NowPlayingMini {
+                    colors: palette
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.maximumWidth: 210
+                }
 
-                        Rectangle {
-                            width: 3
-                            height: 28
-                            radius: 2
-                            color: palette.primary
-                            Layout.alignment: Qt.AlignVCenter
-                        }
+                Rectangle {
+                    width: 1
+                    height: 26
+                    color: palette.alpha(palette.outline, 0.25)
+                    Layout.alignment: Qt.AlignVCenter
+                }
 
-                        ColumnLayout {
+                RowLayout {
+                    spacing: 10
+                    Layout.alignment: Qt.AlignVCenter
+
+                    Text {
+                        text: "CPU " + Math.round(bot.cpu) + "%"
+                        color: palette.alpha(palette.foreground, 0.78)
+                        font.family: palette.fontSans
+                        font.pixelSize: 9
+                    }
+                    Text {
+                        text: "NET " + net.fmt(net.rxKbs + net.txKbs)
+                        color: palette.alpha(palette.foreground, 0.78)
+                        font.family: palette.fontSans
+                        font.pixelSize: 9
+                    }
+                    Text {
+                        text: "BAT " + Math.round(bot.battery) + "%"
+                        color: palette.alpha(palette.foreground, 0.78)
+                        font.family: palette.fontSans
+                        font.pixelSize: 9
+                    }
+                }
+
+                Rectangle {
+                    width: 1
+                    height: 26
+                    color: palette.alpha(palette.outline, 0.25)
+                    Layout.alignment: Qt.AlignVCenter
+                }
+
+                ColumnLayout {
+                    spacing: 0
+                    Layout.alignment: Qt.AlignVCenter
+                    Text {
+                        text: root.clockTime
+                        color: palette.foreground
+                        font.family: palette.fontSans
+                        font.pixelSize: 13
+                        font.weight: Font.DemiBold
+                    }
+                    Text {
+                        text: root.clockDate
+                        color: palette.alpha(palette.foreground, 0.55)
+                        font.family: palette.fontSans
+                        font.pixelSize: 8
+                    }
+                }
+            }
+
+            // Notification replaces the right-hand content inside the same
+            // 54px bar slice — no downward growth into the workspace.
+            Rectangle {
+                id: notificationRow
+                visible: root.open
+                z: 2
+                anchors {
+                    top: parent.top
+                    bottom: parent.bottom
+                    left: parent.left
+                    right: parent.right
+                    leftMargin: 62
+                    rightMargin: 12
+                    topMargin: 8
+                    bottomMargin: 8
+                }
+                radius: 18
+                color: "#101014"
+
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: 12
+                    anchors.rightMargin: 12
+                    spacing: 10
+
+                    Rectangle {
+                        width: 3
+                        height: 28
+                        radius: 2
+                        color: palette.primary
+                        Layout.alignment: Qt.AlignVCenter
+                    }
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 1
+
+                        RowLayout {
                             Layout.fillWidth: true
-                            spacing: 1
-
-                            RowLayout {
-                                Layout.fillWidth: true
-                                spacing: 8
-                                Text {
-                                    text: root.appName
-                                    color: palette.primary
-                                    font.family: palette.fontSans
-                                    font.pixelSize: 9
-                                    font.weight: Font.DemiBold
-                                    elide: Text.ElideRight
-                                }
-                                Text {
-                                    text: root.summary
-                                    color: palette.foreground
-                                    font.family: palette.fontSans
-                                    font.pixelSize: 11
-                                    font.weight: Font.DemiBold
-                                    elide: Text.ElideRight
-                                    Layout.fillWidth: true
-                                }
-                            }
-
+                            spacing: 8
                             Text {
-                                text: root.body
-                                color: palette.alpha(palette.foreground, 0.72)
+                                text: root.appName
+                                color: palette.primary
                                 font.family: palette.fontSans
-                                font.pixelSize: 10
+                                font.pixelSize: 9
+                                font.weight: Font.DemiBold
+                                elide: Text.ElideRight
+                            }
+                            Text {
+                                text: root.summary
+                                color: palette.foreground
+                                font.family: palette.fontSans
+                                font.pixelSize: 11
+                                font.weight: Font.DemiBold
                                 elide: Text.ElideRight
                                 Layout.fillWidth: true
-                                visible: text !== ""
                             }
+                        }
+
+                        Text {
+                            text: root.body
+                            color: palette.alpha(palette.foreground, 0.72)
+                            font.family: palette.fontSans
+                            font.pixelSize: 10
+                            elide: Text.ElideRight
+                            Layout.fillWidth: true
+                            visible: text !== ""
                         }
                     }
                 }
