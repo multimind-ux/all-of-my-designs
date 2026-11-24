@@ -4,7 +4,7 @@ import QtQuick
 import QtQuick.Layouts
 
 // Compact now-playing block for the island: art, title/artist, and four
-// activity bars that only animate while MPRIS reports a playing player.
+// activity bars and previous/play-pause/next controls driven by MPRIS.
 Item {
     id: root
 
@@ -108,6 +108,104 @@ Item {
                     color: visRow.barColors[index % visRow.barColors.length]
                     opacity: root.isPlaying ? 0.9 : 0.3
                     Behavior on height { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
+                }
+            }
+        }
+            Row {
+            id: controls
+            spacing: 4
+            Layout.alignment: Qt.AlignVCenter
+
+            Rectangle {
+                width: 24
+                height: 24
+                radius: 12
+                color: prevArea.containsMouse
+                    ? root.colors.alpha(root.colors.primary, 0.22)
+                    : root.colors.alpha(root.colors.surfaceVariant, 0.55)
+                border.width: 1
+                border.color: root.colors.alpha(root.colors.outline, 0.35)
+                opacity: root.hasPlayer && root.player.canGoPrevious ? 1 : 0.4
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "󰒮"
+                    color: root.colors.foreground
+                    font.family: root.colors.fontSans
+                    font.pixelSize: 11
+                }
+                MouseArea {
+                    id: prevArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    enabled: root.hasPlayer && root.player.canGoPrevious
+                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    onClicked: {
+                        if (root.hasPlayer && root.player.canGoPrevious)
+                            root.player.previous()
+                    }
+                }
+            }
+
+            Rectangle {
+                width: 24
+                height: 24
+                radius: 12
+                color: playArea.containsMouse
+                    ? root.colors.alpha(root.colors.primary, 0.30)
+                    : root.colors.alpha(root.colors.primary, 0.14)
+                border.width: 1
+                border.color: root.colors.alpha(root.colors.primary, 0.35)
+                opacity: root.hasPlayer && root.player.canTogglePlaying ? 1 : 0.4
+
+                Text {
+                    anchors.centerIn: parent
+                    text: root.isPlaying ? "" : ""
+                    color: root.colors.foreground
+                    font.family: root.colors.fontSans
+                    font.pixelSize: 11
+                }
+                MouseArea {
+                    id: playArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    enabled: root.hasPlayer && root.player.canTogglePlaying
+                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    onClicked: {
+                        if (root.hasPlayer && root.player.canTogglePlaying)
+                            root.player.togglePlaying()
+                    }
+                }
+            }
+
+            Rectangle {
+                width: 24
+                height: 24
+                radius: 12
+                color: nextArea.containsMouse
+                    ? root.colors.alpha(root.colors.primary, 0.22)
+                    : root.colors.alpha(root.colors.surfaceVariant, 0.55)
+                border.width: 1
+                border.color: root.colors.alpha(root.colors.outline, 0.35)
+                opacity: root.hasPlayer && root.player.canGoNext ? 1 : 0.4
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "󰒭"
+                    color: root.colors.foreground
+                    font.family: root.colors.fontSans
+                    font.pixelSize: 11
+                }
+                MouseArea {
+                    id: nextArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    enabled: root.hasPlayer && root.player.canGoNext
+                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    onClicked: {
+                        if (root.hasPlayer && root.player.canGoNext)
+                            root.player.next()
+                    }
                 }
             }
         }

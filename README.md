@@ -9,7 +9,7 @@ These are my own desktop designs, built and maintained by multimind-ux (Abdulbas
 | Folder | Description |
 | --- | --- |
 | `quickshell/wifi-panel` | Wi-Fi panel with network list, live rx/tx throughput, and Cloudflare speedtest. `SUPER+H`. |
-| `quickshell/notif-island` | Permanent top-center Dynamic Island with PixelBot, now playing, CPU/network/battery, clock, and notification popups. `SUPER+SHIFT+N`. |
+| `quickshell/notif-island` | Permanent top-center Dynamic Island with PixelBot, now playing with previous/play-pause/next controls, CPU/network/battery, clock, and notification popups. `SUPER+SHIFT+N`. |
 | `quickshell/wall-clock` | Full DesktopClock stack: wallpaper, wallpaper-frosted Iceberg time, optional subject cutout in front, and bottom date. |
 | `quickshell/lockscreen` | Full lockscreen stack: clock, quote, music, weather, stats, uptime, recent notifications, and PAM password field. `SUPER+L`. |
 | `assets/pixelbot` | PixelBot mood sounds. |

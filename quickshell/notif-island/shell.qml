@@ -216,7 +216,7 @@ ShellRoot {
                 NowPlayingMini {
                     colors: palette
                     Layout.alignment: Qt.AlignVCenter
-                    Layout.maximumWidth: 210
+                    Layout.maximumWidth: 290
                 }
 
                 Rectangle {
