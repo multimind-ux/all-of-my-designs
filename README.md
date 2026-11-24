@@ -61,6 +61,7 @@ qs -c lockscreen ipc call lockscreen lockTimed 3
 - The wallpaper clock reads Caelestia's wallpaper from `~/.local/state/caelestia/wallpaper/path.txt` and regenerates assets in `~/.cache/wallcut/`. `rembg` is optional: without it the frosted glass still works, but no subject cutout is drawn.
 - The lockscreen PAM service lives at `~/.config/quickshell/lockscreen/pam/quickshell-lock` and uses `pam_unix.so` auth only.
 - Paths in `quickshell/lockscreen/lockscreen.json` support `~` and `$HOME`.
+- PixelBot's idle monitor is disabled because Quickshell 0.3.2 segfaults in its destructor on reload/shutdown. The sleepy mood is still available with `qs -c notif-island ipc call bot force sleepy`.
 
 ## Attribution
 

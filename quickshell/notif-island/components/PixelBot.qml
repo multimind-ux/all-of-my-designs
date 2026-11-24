@@ -31,7 +31,6 @@ Item {
     property int roamWidth: 56                  // 16 = no roaming
     property int cpuBusyAt: 80
     property int batteryLowAt: 15
-    property int awayAfterSeconds: 180
     property string recorders: "meetcap|wf-recorder|wl-screenrec|obs"
     property bool helloOnWorkspace: false
     property string forced: ""
@@ -74,7 +73,9 @@ Item {
     property var rs: ({ x: 20, dir: 1, wait: 0, target: 20, moving: false })
 
     readonly property bool muted: Pipewire.defaultAudioSink?.audio?.muted ?? false
-    readonly property bool away: idle.isIdle
+    // IdleMonitor removed: Quickshell 0.3.2 segfaults in its destructor on
+    // reload/shutdown. The "sleepy" mood is still available via `bot force sleepy`.
+    readonly property bool away: false
     readonly property bool music: {
         const ps = Mpris.players.values
         for (let i = 0; i < ps.length; i++)
@@ -132,13 +133,6 @@ Item {
 
     // ---------- event sources ----------
     PwObjectTracker { objects: [Pipewire.defaultAudioSink] }
-
-    IdleMonitor {
-        id: idle
-        enabled: root.active
-        timeout: root.awayAfterSeconds
-        respectInhibitors: true
-    }
 
     Connections {
         target: Hyprland
