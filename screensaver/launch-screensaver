@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Launch a fullscreen CachyOS screensaver on every Hyprland monitor.
+export PATH="$HOME/.local/bin:$PATH"
+
+command -v tte >/dev/null 2>&1 || { echo "tte not found — run: uv tool install terminaltexteffects" >&2; exit 1; }
+command -v alacritty >/dev/null 2>&1 || { echo "alacritty not found" >&2; exit 1; }
+
+pgrep -f '[o]rg.screensaver' >/dev/null && exit 0
+[ -f "$HOME/.config/branding-off" ] && [ "$1" != "force" ] && exit 0
+
+command -v walker >/dev/null 2>&1 && walker -q >/dev/null 2>&1 || true
+
+focused=$(hyprctl monitors -j 2>/dev/null | jq -r '.[] | select(.focused==true) | .name // empty' 2>/dev/null)
+[ -z "$focused" ] && focused=$(hyprctl monitors -j 2>/dev/null | jq -r '.[0].name // empty' 2>/dev/null)
+
+EFFECT_ARGS=""
+[[ "$*" == *decrypt* ]] && EFFECT_ARGS="--effect decrypt"
+
+for m in $(hyprctl monitors -j 2>/dev/null | jq -r '.[] | .name' 2>/dev/null); do
+  hyprctl dispatch "hl.dsp.focus({ monitor = \"$m\" })" >/dev/null 2>&1
+  hyprctl dispatch "hl.dsp.exec_cmd(\"alacritty --class=org.screensaver --title=org.screensaver -o window.startup_mode=Fullscreen -o font.size=10 -e $HOME/.local/bin/screensaver $EFFECT_ARGS\")" >/dev/null 2>&1 &
+done
+
+[ -n "$focused" ] && hyprctl dispatch "hl.dsp.focus({ monitor = \"$focused\" })" >/dev/null 2>&1

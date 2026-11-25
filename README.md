@@ -10,6 +10,7 @@ These are my own desktop designs, built and maintained by multimind-ux (Abdulbas
 | --- | --- |
 | `quickshell/wifi-panel` | Wi-Fi panel with network list, live rx/tx throughput, and Cloudflare speedtest. `SUPER+H`. |
 | `quickshell/notif-island` | Permanent top-center Dynamic Island with PixelBot, now playing with previous/play-pause/next controls, CPU/network/battery, clock, and notification popups. `SUPER+SHIFT+N`. |
+| `screensaver/` | CachyOS-branded fullscreen screen saver (Alacritty + `tte`) driven by `hypridle`; `SUPER+S` launches it, `SUPER+SHIFT+I` toggles idle lock. |
 | `quickshell/wall-clock` | Full DesktopClock stack: wallpaper, wallpaper-frosted Iceberg time, optional subject cutout in front, and bottom date. |
 | `quickshell/lockscreen` | Full lockscreen stack: clock, quote, music, weather, stats, uptime, recent notifications, and PAM password field. `SUPER+L`. |
 | `assets/pixelbot` | PixelBot mood sounds. |
@@ -61,6 +62,7 @@ qs -c lockscreen ipc call lockscreen lockTimed 3
 - The wallpaper clock reads Caelestia's wallpaper from `~/.local/state/caelestia/wallpaper/path.txt` and regenerates assets in `~/.cache/wallcut/`. `rembg` is optional: without it the frosted glass still works, but no subject cutout is drawn.
 - The lockscreen PAM service lives at `~/.config/quickshell/lockscreen/pam/quickshell-lock` and uses `pam_unix.so` auth only.
 - Paths in `quickshell/lockscreen/lockscreen.json` support `~` and `$HOME`.
+- The CachyOS screen saver needs `hypridle`, `alacritty`, `jq`, and `tte` (`uv tool install terminaltexteffects`). It runs as the systemd user `hypridle.service` — not a Hyprland `exec-once` — so it owns `org.freedesktop.ScreenSaver` and honors video/audio inhibit locks. The logo lives at `~/.config/branding/cachyos.txt`.
 - PixelBot's idle monitor is disabled because Quickshell 0.3.2 segfaults in its destructor on reload/shutdown. The sleepy mood is still available with `qs -c notif-island ipc call bot force sleepy`.
 
 ## Attribution

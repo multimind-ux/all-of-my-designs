@@ -12,3 +12,7 @@ create_bind("SUPER + H", hl.dsp.exec_cmd("qs -c wifi-panel ipc call wifi toggle"
 
 -- Notification island
 create_bind("SUPER + SHIFT + N", hl.dsp.exec_cmd("qs -c notif-island ipc call island toggle"))
+
+-- CachyOS screen saver / idle lock
+create_bind("SUPER + S", hl.dsp.exec_cmd("/home/abdulbasit/.local/bin/launch-screensaver"))
+create_bind("SUPER + SHIFT + I", hl.dsp.exec_cmd("/home/abdulbasit/.local/bin/idle-toggle"))
