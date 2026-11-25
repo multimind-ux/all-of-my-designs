@@ -208,15 +208,16 @@ ShellRoot {
                         moodSounds: true
                     }
 
-                    Text {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.bottom: parent.bottom
-                        anchors.bottomMargin: 1
-                        text: "PixelCalypso"
-                        color: palette.alpha(palette.foreground, 0.45)
-                        font.family: palette.fontSans
-                        font.pixelSize: 6
-                    }
+                }
+
+                Text {
+                    Layout.alignment: Qt.AlignVCenter
+                    text: "PixelCalypso\n"
+                        + (bot.mood === "good-morning" ? "good morning" : bot.mood.replace(/-/g, " "))
+                    color: palette.alpha(palette.foreground, 0.72)
+                    font.family: palette.fontSans
+                    font.pixelSize: 8
+                    lineHeight: 1.15
                 }
 
                 Rectangle {
