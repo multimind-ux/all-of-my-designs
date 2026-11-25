@@ -5,7 +5,7 @@ import QtQuick
 import QtQuick.Layouts
 import "components"
 
-// Dynamic island — always-on top-center capsule with the PixelBot head,
+// Dynamic island — always-on top-center capsule with the PixelCalypso head,
 // now playing, live stats, clock/date, and notification expansion.
 // Notifications come from Caelestia's persisted notifs.json (no second daemon).
 ShellRoot {
@@ -129,6 +129,9 @@ ShellRoot {
                 + " height=" + Math.round(capsule.height - root.topClip)
         }
         function botStatus(): string { return bot.status() }
+        function calypsoStatus(): string { return bot.status() }
+        function calypsoMoods(): string { return bot.moods() }
+        function calypsoMood(): string { return bot.current() }
     }
 
     // ---------- window ----------
@@ -203,6 +206,16 @@ ShellRoot {
                         roamWidth: 16
                         registerIpc: true
                         moodSounds: true
+                    }
+
+                    Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.bottom: parent.bottom
+                        anchors.bottomMargin: 1
+                        text: "PixelCalypso"
+                        color: palette.alpha(palette.foreground, 0.45)
+                        font.family: palette.fontSans
+                        font.pixelSize: 6
                     }
                 }
 

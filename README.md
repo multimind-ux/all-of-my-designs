@@ -9,7 +9,7 @@ These are my own desktop designs, built and maintained by multimind-ux (Abdulbas
 | Folder | Description |
 | --- | --- |
 | `quickshell/wifi-panel` | Wi-Fi panel with network list, live rx/tx throughput, and Cloudflare speedtest. `SUPER+H`. |
-| `quickshell/notif-island` | Permanent top-center Dynamic Island with PixelBot, now playing with previous/play-pause/next controls, CPU/network/battery, clock, and notification popups. `SUPER+SHIFT+N`. |
+| `quickshell/notif-island` | Permanent top-center Dynamic Island with PixelCalypso moods, now playing with previous/play-pause/next controls, CPU/network/battery, clock, and notification popups. `SUPER+SHIFT+N`. |
 | `screensaver/` | CachyOS-branded fullscreen screen saver (Alacritty + `tte`) driven by `hypridle`; `SUPER+S` launches it, `SUPER+SHIFT+I` toggles idle lock. |
 | `quickshell/wall-clock` | Full DesktopClock stack: wallpaper, wallpaper-frosted Iceberg time, optional subject cutout in front, and bottom date. |
 | `quickshell/lockscreen` | Full lockscreen stack: clock, quote, music, weather, stats, uptime, recent notifications, and PAM password field. `SUPER+L`. |
@@ -48,7 +48,11 @@ qs -c lockscreen -n -d
 ```bash
 qs -c wifi-panel ipc call wifi toggle
 qs -c notif-island ipc call island toggle
-qs -c notif-island ipc call bot status
+qs -c notif-island ipc call calypso status
+qs -c notif-island ipc call calypso moods
+qs -c notif-island ipc call calypso current
+qs -c notif-island ipc call calypso force good-morning
+qs -c notif-island ipc call calypso cycle
 qs -c wall-clock ipc call wallclock state
 qs -c wall-clock ipc call wallclock regen
 qs -c lockscreen ipc call lockscreen lock
@@ -63,7 +67,9 @@ qs -c lockscreen ipc call lockscreen lockTimed 3
 - The lockscreen PAM service lives at `~/.config/quickshell/lockscreen/pam/quickshell-lock` and uses `pam_unix.so` auth only.
 - Paths in `quickshell/lockscreen/lockscreen.json` support `~` and `$HOME`.
 - The CachyOS screen saver needs `hypridle`, `alacritty`, `jq`, and `tte` (`uv tool install terminaltexteffects`). It runs as the systemd user `hypridle.service` — not a Hyprland `exec-once` — so it owns `org.freedesktop.ScreenSaver` and honors video/audio inhibit locks. The logo lives at `~/.config/branding/cachyos.txt`.
-- PixelBot's idle monitor is disabled because Quickshell 0.3.2 segfaults in its destructor on reload/shutdown. The sleepy mood is still available with `qs -c notif-island ipc call bot force sleepy`.
+- PixelCalypso keeps the `bot` IPC target as a compatibility alias; new scripts should use `calypso`.
+- The `good-morning` mood plays on shell start and on `ipc call calypso hello`, then auto-clears after 5 seconds. `SUPER+M` cycles moods, `SUPER+CTRL+M` forces `good-morning`, and the music workspace moved to `SUPER+ALT+M`.
+- PixelCalypso's idle monitor is disabled because Quickshell 0.3.2 segfaults in its destructor on reload/shutdown. The sleepy mood is still available with `qs -c notif-island ipc call calypso force sleepy`.
 
 ## Attribution
 

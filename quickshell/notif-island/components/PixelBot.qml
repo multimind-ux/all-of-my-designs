@@ -6,21 +6,18 @@ import Quickshell.Hyprland
 import Quickshell.Services.Mpris
 import Quickshell.Services.Pipewire
 
-// PixelBot — flat 2D pixel bot. One instance owns the `bot` IPC target;
-// the Control Center instance disables the handler and runs only while open.
+// PixelCalypso (internal component: PixelBot) — flat 2D pixel bot.
+// One instance owns the `bot` and `calypso` IPC targets; the Control Center
+// instance disables both handlers and runs only while open.
 //
 // It wanders, dances with music and reacts to CPU, battery, recording,
-// network, mute, idle and focus state. The same state names are exposed for
-// both the bar and the Control Center:
+// network, mute, idle and focus state. Moods can be forced, cycled, or
+// listed through either target:
 //
-//     ipc call bot ping
-//     ipc call bot ok
-//     ipc call bot fail
-//     ipc call bot hello
-//     ipc call bot focus true
-//     ipc call bot force dance
-//     ipc call bot clear
-//     ipc call bot status
+//     ipc call calypso ping / ok / fail / hello
+//     ipc call calypso force good-morning
+//     ipc call calypso moods / current / cycle / clear / status
+//     ipc call bot ... (kept as a compatibility alias)
 Item {
     id: root
 
@@ -34,6 +31,7 @@ Item {
     property string recorders: "meetcap|wf-recorder|wl-screenrec|obs"
     property bool helloOnWorkspace: false
     property string forced: ""
+    property int greetingHoldMs: 5000
     property bool active: true                  // pause clock/poller when the panel is closed
     property bool registerIpc: true             // only one instance may own target "bot"
     property bool moodSounds: true              // only one instance should speak
@@ -45,7 +43,14 @@ Item {
     // a sine sound from the "Sine waves only" sound set.
     readonly property var audibleMoods: [
         "alert", "error", "happy", "lowbat", "recording", "busy",
-        "offline", "charging", "dance", "focus", "muted", "sleepy", "hello"
+        "offline", "charging", "dance", "focus", "muted", "sleepy", "hello",
+        "good-morning"
+    ]
+
+    readonly property var moodNames: [
+        "idle", "hello", "good-morning", "dance", "music", "focus", "busy",
+        "lowbat", "offline", "recording", "muted", "sleepy", "walk",
+        "alert", "ok", "error", "charging"
     ]
 
     readonly property bool roam: roamWidth > 16
@@ -117,7 +122,7 @@ Item {
         hello: now < helloUntil
     })
     readonly property string baseMood: forced !== "" ? forced : moodInfo[0]
-    readonly property string moodText: forced !== "" ? forced : moodInfo[1]
+    readonly property string moodText: root.baseMood === "good-morning" ? "good morning" : (forced !== "" ? forced : moodInfo[1])
 
     onMoodChanged: {
         cv.requestPaint()
@@ -144,11 +149,24 @@ Item {
     // Public triggers used by the bar and IPC.
     function ping() { root.pingUntil = Date.now() + 3000 }
     function ok() { root.okUntil = Date.now() + 3000 }
-    function hello() { root.helloUntil = Date.now() + 3000 }
+    function hello() {
+        root.helloUntil = Date.now() + 4000
+        root.force("good-morning")
+    }
     function fail() { root.failed = true }
     function focus(on) { root.focusMode = on }
-    function clear() { root.failed = false; root.forced = "" }
-    function force(mood) { root.forced = mood }
+    function clear() { greetingTimer.stop(); root.failed = false; root.forced = "" }
+    function force(mood) {
+        root.forced = mood
+        if (mood === "good-morning") greetingTimer.restart()
+        else greetingTimer.stop()
+    }
+    function moods() { return root.moodNames.join(" ") }
+    function current() { return root.mood }
+    function cycle() {
+        const i = root.moodNames.indexOf(root.mood)
+        root.force(root.moodNames[(i + 1) % root.moodNames.length])
+    }
 
     function playSound(name) {
         if (!soundEnabled || !moodSounds || !active) return
@@ -160,6 +178,7 @@ Item {
 
     function status() {
         return "mood=" + root.mood
+            + " forced=" + root.forced
             + " cpu=" + root.cpu
             + " bat=" + root.battery
             + " charging=" + root.charging
@@ -183,6 +202,27 @@ Item {
         function focus(on: bool): void { root.focus(on) }
         function clear(): void { root.clear() }
         function force(mood: string): void { root.force(mood) }
+        function moods(): string { return root.moods() }
+        function current(): string { return root.current() }
+        function cycle(): void { root.cycle() }
+        function sound(on: bool): void { root.soundEnabled = on }
+        function play(mood: string): void { root.playSound(mood) }
+        function status(): string { return root.status() }
+    }
+
+    IpcHandler {
+        target: "calypso"
+        enabled: root.registerIpc
+        function ping(): void { root.ping() }
+        function ok(): void { root.ok() }
+        function hello(): void { root.hello() }
+        function fail(): void { root.fail() }
+        function focus(on: bool): void { root.focus(on) }
+        function clear(): void { root.clear() }
+        function force(mood: string): void { root.force(mood) }
+        function moods(): string { return root.moods() }
+        function current(): string { return root.current() }
+        function cycle(): void { root.cycle() }
         function sound(on: bool): void { root.soundEnabled = on }
         function play(mood: string): void { root.playSound(mood) }
         function status(): string { return root.status() }
@@ -243,7 +283,21 @@ done
     Timer {
         interval: 900
         running: root.active && root.moodSounds && !root.soundReady
-        onTriggered: root.soundReady = true
+        onTriggered: {
+            root.soundReady = true
+            if (root.registerIpc && root.active) root.hello()
+        }
+    }
+
+    // Good-morning is a greeting, not a sticky mode: it clears itself so the
+    // bot returns to its normal reactive moods after the greeting window.
+    Timer {
+        id: greetingTimer
+        interval: root.greetingHoldMs
+        repeat: false
+        onTriggered: {
+            if (root.forced === "good-morning") root.forced = ""
+        }
     }
 
     Component.onCompleted: {
@@ -332,7 +386,8 @@ done
 
         // The newer state names map onto the old visual set.
         let visual = m
-        if (visual === "dance") visual = "music"
+        if (visual === "good-morning") visual = "hello"
+        else if (visual === "dance") visual = "music"
         else if (visual === "offline") visual = "muted"
         else if (visual === "focus" || visual === "walk") visual = "idle"
 
